@@ -14,6 +14,28 @@ func NewUserRepo(db *sql.DB) *Users {
 	return &Users{db}
 }
 
+func (repository Users) CreateUser(user models.User) (uint64, error) {
+	statement, error := repository.db.Prepare("insert into users (username, name, email, password) VALUES (?, ?, ?, ?)")
+
+	if error != nil {
+		return 0, error
+	}
+
+	defer statement.Close()
+
+	result, error := statement.Exec(user.Username, user.Name, user.Email, user.Password)
+	if error != nil {
+		return 0, error
+	}
+
+	lastIDInserted, error := result.LastInsertId()
+	if error != nil {
+		return 0, error
+	}
+
+	return uint64(lastIDInserted), nil
+
+}
 func (repository Users) GetUsers(user string) ([]models.User, error) {
 	user = fmt.Sprintf("%%%s%%", user)
 

@@ -14,6 +14,16 @@ type User struct {
 	Password string `json:"password,omitempty"`
 }
 
+func (user *User) Prepare() error {
+	if error := user.validateFields(); error != nil {
+		return error
+	}
+
+	user.formatFields()
+
+	return nil
+}
+
 func (user *User) validateFields() error {
 	if user.Username == "" {
 		return errors.New("Username can't be empty")
@@ -34,7 +44,7 @@ func (user *User) validateFields() error {
 	return nil
 }
 
-func (user *User) formatFiles() {
+func (user *User) formatFields() {
 	user.Username = strings.TrimSpace(user.Username)
 	user.Name = strings.TrimSpace(user.Name)
 	user.Email = strings.TrimSpace(user.Email)
@@ -47,7 +57,7 @@ func (user *User) HashPassword(password string) (hashedPassword string) {
 	if error != nil {
 		return string(error.Error())
 	}
-	user.Password = string(hashPassword)
+	hashedPassword = string(hashPassword)
 
 	return hashedPassword
 
