@@ -7,14 +7,5 @@ WORKDIR /app
 
 COPY --from=build  /app/main .
 
-ENV DB_USER=root
-ENV DB_PASS=root
-ENV DB_NAME=rscm
-ENV DB_PROTOCOL="tcp(140.238.182.164:32415)"
-
-ENV API_PORT=5001
-
-
-
 EXPOSE 8080
 CMD ["/app/main"]
