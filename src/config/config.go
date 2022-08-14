@@ -9,6 +9,7 @@ import (
 var (
 	DBConnection = ""
 	Port         = 0
+	SecretKey    []byte
 )
 
 func LoadConfiguration() {
@@ -26,4 +27,7 @@ func LoadConfiguration() {
 		os.Getenv("DB_PROTOCOL"),
 		os.Getenv("DB_NAME"),
 	)
+
+	SecretKey = []byte(os.Getenv("SECRET_KEY"))
+
 }

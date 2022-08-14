@@ -47,3 +47,24 @@ func (repository Users) GetUsers(user string) ([]models.User, error) {
 	return users, nil
 
 }
+
+func (repository Users) GetUserByEmail(email string) (models.User, error) {
+	query, error := repository.db.Query(
+		"select user_id, password from users where email = ?",
+		email)
+	if error != nil {
+		return models.User{}, error
+	}
+
+	defer query.Close()
+
+	var user models.User
+
+	if query.Next() {
+		if error = query.Scan(&user.User_id, &user.Password); error != nil {
+			return models.User{}, error
+		}
+	}
+
+	return user, error
+}
