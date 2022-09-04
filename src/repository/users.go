@@ -90,3 +90,33 @@ func (repository Users) GetUserByEmail(email string) (models.User, error) {
 
 	return user, error
 }
+
+func (repository Users) GetUserProfile(userID uint64) (models.User, error) {
+	query, error := repository.db.Query(
+		"select user_id, username,name,email from users where user_id = ?",
+		userID,
+	)
+
+	if error != nil {
+		return models.User{}, error
+	}
+
+	defer query.Close()
+
+	var user models.User
+
+	for query.Next() {
+
+		if error = query.Scan(
+
+			&user.User_id,
+			&user.Username,
+			&user.Name,
+			&user.Email,
+		); error != nil {
+			return models.User{}, error
+		}
+
+	}
+	return user, nil
+}

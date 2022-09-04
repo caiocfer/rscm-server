@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"rscm/src/auth"
 	"rscm/src/db"
 	"rscm/src/models"
 	"rscm/src/repository"
@@ -60,6 +61,32 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 	repositories := repository.NewUserRepo(db)
 	users, error := repositories.GetUsers(user)
+
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, users)
+
+}
+
+func GetUserProfile(w http.ResponseWriter, r *http.Request) {
+	userID, error := auth.GetUserID(r)
+	if error != nil {
+		responses.Error(w, http.StatusUnauthorized, error)
+		return
+	}
+
+	db, error := db.Connect()
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+	defer db.Close()
+
+	repositories := repository.NewUserRepo(db)
+	users, error := repositories.GetUserProfile(userID)
 
 	if error != nil {
 		responses.Error(w, http.StatusInternalServerError, error)

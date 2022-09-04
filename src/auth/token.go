@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"rscm/src/config"
+	"strconv"
 	"strings"
 	"time"
 
@@ -50,4 +51,24 @@ func returnVerificationKey(token *jwt.Token) (interface{}, error) {
 	}
 
 	return config.SecretKey, nil
+}
+
+func GetUserID(r *http.Request) (uint64, error) {
+	tokenString := getToken(r)
+	token, error := jwt.Parse(tokenString, returnVerificationKey)
+
+	if error != nil {
+		return 0, error
+	}
+
+	if permissions, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		userID, error := strconv.ParseUint(fmt.Sprintf("%.0f", permissions["userID"]), 10, 64)
+		if error != nil {
+			return 0, error
+		}
+
+		return userID, nil
+	}
+	return 0, errors.New("Invalid Token")
+
 }
