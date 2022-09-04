@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"rscm/src/auth"
 
 	"github.com/gorilla/mux"
 )
@@ -20,7 +21,7 @@ func ConfigRoutes(r *mux.Router) *mux.Router {
 
 	for _, route := range routes {
 		if route.RequerisAuthentication {
-			//r.HandleFunc(route.URI).Methods(route.Method)
+			r.HandleFunc(route.URI, auth.AuthUser(route.Function))
 		} else {
 			r.HandleFunc(route.URI, route.Function).Methods(route.Method)
 
