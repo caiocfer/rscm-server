@@ -120,3 +120,36 @@ func (repository Users) GetUserProfile(userID uint64) (models.User, error) {
 	}
 	return user, nil
 }
+
+func (repository Users) GetSearchedUser(searchedUser string) ([]models.User, error) {
+	searchedUser = fmt.Sprintf("%s%%", searchedUser)
+
+	query, error := repository.db.Query(
+		"select user_id,username,name,email from users where username like ? or name like ?",
+		searchedUser, searchedUser,
+	)
+
+	if error != nil {
+		return nil, error
+	}
+
+	var users []models.User
+
+	for query.Next() {
+		var user models.User
+
+		if error = query.Scan(
+			&user.User_id,
+			&user.Username,
+			&user.Name,
+			&user.Email,
+		); error != nil {
+			return nil, error
+		}
+
+		users = append(users, user)
+
+	}
+
+	return users, nil
+}

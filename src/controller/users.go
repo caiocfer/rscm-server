@@ -96,3 +96,24 @@ func GetUserProfile(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusOK, users)
 
 }
+
+func GetSearchedUser(w http.ResponseWriter, r *http.Request) {
+	searchedUser := strings.ToLower(r.URL.Query().Get("user"))
+	db, error := db.Connect()
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	defer db.Close()
+
+	repository := repository.NewUserRepo(db)
+	users, error := repository.GetSearchedUser(searchedUser)
+
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, users)
+}
