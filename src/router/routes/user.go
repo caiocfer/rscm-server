@@ -28,6 +28,12 @@ var userRoute = []Route{
 		URI:                    "/users/",
 		Method:                 http.MethodGet,
 		Function:               controller.GetSearchedUser,
-		RequerisAuthentication: false,
+		RequerisAuthentication: true,
+	},
+	{
+		URI:                    "/users/{userid}",
+		Method:                 http.MethodGet,
+		Function:               controller.GetUserById,
+		RequerisAuthentication: true,
 	},
 }

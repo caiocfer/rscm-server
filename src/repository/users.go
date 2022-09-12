@@ -153,3 +153,27 @@ func (repository Users) GetSearchedUser(searchedUser string) ([]models.User, err
 
 	return users, nil
 }
+
+func (repository Users) GetUserById(userID uint64) (models.User, error) {
+	query, error := repository.db.Query(
+		"select user_id, username,name,email from users where user_id = ?",
+		userID,
+	)
+
+	if error != nil {
+		return models.User{}, error
+	}
+
+	var user models.User
+	if query.Next() {
+		if error = query.Scan(
+			&user.User_id,
+			&user.Username,
+			&user.Name,
+			&user.Email,
+		); error != nil {
+			return models.User{}, nil
+		}
+	}
+	return user, error
+}

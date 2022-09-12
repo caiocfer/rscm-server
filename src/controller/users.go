@@ -9,7 +9,10 @@ import (
 	"rscm/src/models"
 	"rscm/src/repository"
 	"rscm/src/responses"
+	"strconv"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -116,4 +119,32 @@ func GetSearchedUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responses.JSON(w, http.StatusOK, users)
+}
+
+func GetUserById(w http.ResponseWriter, r *http.Request) {
+	ID := mux.Vars(r)
+
+	userID, error := strconv.ParseUint(ID["userid"], 10, 64)
+	if error != nil {
+		responses.JSON(w, http.StatusBadRequest, error)
+		return
+	}
+
+	db, error := db.Connect()
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	defer db.Close()
+
+	repositories := repository.NewUserRepo(db)
+	user, error := repositories.GetUserById(userID)
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, user)
+
 }
