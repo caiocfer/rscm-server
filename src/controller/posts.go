@@ -9,6 +9,9 @@ import (
 	"rscm/src/models"
 	"rscm/src/repository"
 	"rscm/src/responses"
+	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 func CreatePost(w http.ResponseWriter, r *http.Request) {
@@ -52,5 +55,33 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responses.JSON(w, http.StatusOK, post)
+
+}
+
+func GetUserPosts(w http.ResponseWriter, r *http.Request) {
+	parameters := mux.Vars(r)
+	userID, error := strconv.ParseUint(parameters["userID"], 10, 64)
+	if error != nil {
+		responses.Error(w, http.StatusBadRequest, error)
+		return
+	}
+
+	db, error := db.Connect()
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	defer db.Close()
+
+	repositories := repository.NewPostRepo(db)
+	posts, error := repositories.GetUserPosts(userID)
+
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, posts)
 
 }

@@ -34,3 +34,36 @@ func (repository Posts) CreateNewPost(post models.Post) (uint64, error) {
 
 	return uint64(lastIDInserted), nil
 }
+
+func (repository Posts) GetUserPosts(userId uint64) ([]models.Post, error) {
+	query, error := repository.db.Query(
+		"select posts.post_id, posts.author_id,users.username, posts.title, posts.content from posts inner join users on posts.author_id=users.user_id where posts.author_id = ?",
+		userId,
+	)
+
+	if error != nil {
+		return []models.Post{}, error
+	}
+
+	defer query.Close()
+
+	var posts []models.Post
+
+	for query.Next() {
+		var post models.Post
+		if error = query.Scan(
+			&post.PostId,
+			&post.AuthorId,
+			&post.AuthorUsername,
+			&post.Title,
+			&post.Content,
+		); error != nil {
+			return []models.Post{}, error
+		}
+
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+
+}
