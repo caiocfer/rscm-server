@@ -11,6 +11,8 @@ type Post struct {
 	AuthorUsername string `json:"author_username,omitempty"`
 	Title          string `json:"title,omitempty"`
 	Content        string `json:"content,omitempty"`
+	MusicTitle     string `json:"music_title,omitempty"`
+	MusicLink      string `json:"music_link,omityempty"`
 }
 
 func (post *Post) validateFields() error {
@@ -27,6 +29,8 @@ func (post *Post) validateFields() error {
 func (post *Post) formatFields() {
 	post.Title = strings.TrimSpace(post.Title)
 	post.Content = strings.TrimSpace(post.Content)
+	post.MusicTitle = strings.TrimSpace(post.MusicTitle)
+	post.MusicLink = strings.TrimSpace(post.MusicLink)
 }
 
 func (post *Post) Prepare() error {

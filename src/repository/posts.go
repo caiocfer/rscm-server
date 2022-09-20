@@ -14,7 +14,8 @@ func NewPostRepo(db *sql.DB) *Posts {
 }
 
 func (repository Posts) CreateNewPost(post models.Post) (uint64, error) {
-	statment, error := repository.db.Prepare("insert into posts(author_id,title,content) values (?,?,?)")
+	statment, error := repository.db.Prepare(
+		"insert into posts(author_id,title,content,music_title,music_link) values (?,?,?,?,?)")
 
 	if error != nil {
 		return 0, error
@@ -22,7 +23,7 @@ func (repository Posts) CreateNewPost(post models.Post) (uint64, error) {
 
 	defer statment.Close()
 
-	result, error := statment.Exec(post.AuthorId, post.Title, post.Content)
+	result, error := statment.Exec(post.AuthorId, post.Title, post.Content, post.MusicTitle, post.MusicLink)
 	if error != nil {
 		return 0, error
 	}
@@ -36,9 +37,11 @@ func (repository Posts) CreateNewPost(post models.Post) (uint64, error) {
 }
 
 func (repository Posts) GetUserPosts(userId uint64) ([]models.Post, error) {
-	query, error := repository.db.Query(
-		"select posts.post_id, posts.author_id,users.username, posts.title, posts.content from posts inner join users on posts.author_id=users.user_id where posts.author_id = ?",
-		userId,
+	query, error := repository.db.Query(`
+		select posts.post_id, posts.author_id,users.username, posts.title, posts.content, posts.music_title, posts.music_link 
+		from posts inner join users on posts.author_id=users.user_id 
+		where posts.author_id = ?
+		`, userId,
 	)
 
 	if error != nil {
@@ -57,6 +60,8 @@ func (repository Posts) GetUserPosts(userId uint64) ([]models.Post, error) {
 			&post.AuthorUsername,
 			&post.Title,
 			&post.Content,
+			&post.MusicTitle,
+			&post.MusicLink,
 		); error != nil {
 			return []models.Post{}, error
 		}
