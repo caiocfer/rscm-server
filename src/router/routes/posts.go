@@ -13,6 +13,12 @@ var postRoute = []Route{
 		RequerisAuthentication: true,
 	},
 	{
+		URI:                    "/posts",
+		Method:                 http.MethodGet,
+		Function:               controller.GetFollowedUserPosts,
+		RequerisAuthentication: true,
+	},
+	{
 		URI:                    "/posts/{userID}",
 		Method:                 http.MethodGet,
 		Function:               controller.GetUserPosts,

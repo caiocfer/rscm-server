@@ -177,3 +177,73 @@ func (repository Users) GetUserById(userID uint64) (models.User, error) {
 	}
 	return user, error
 }
+
+func (repository Users) FollowUser(userId, followerId uint64) error {
+	statement, error := repository.db.Prepare(`
+	insert into followers (user_id, follower_id) values (?,?)
+	`)
+
+	if error != nil {
+		return error
+	}
+
+	defer statement.Close()
+
+	if _, error = statement.Exec(userId, followerId); error != nil {
+		return error
+	}
+
+	return nil
+}
+
+func (repository Users) UnfollowUser(userId, followerId uint64) error {
+	statement, error := repository.db.Prepare(`
+	delete from followers where user_id = ? and follower_id = ?
+	`)
+
+	if error != nil {
+		return error
+	}
+
+	defer statement.Close()
+
+	if _, error = statement.Exec(userId, followerId); error != nil {
+		return error
+	}
+
+	return nil
+}
+
+func (repository Users) GetFollowedUserPosts(userId uint64) ([]models.Post, error) {
+	query, error := repository.db.Query(`
+	select distinct p.*, u.username from posts p inner join users u on u.user_id = p.author_id 
+	inner join followers f on p.author_id = f.user_id where u.user_id = ? or f.follower_id = ? order by 1 desc;
+	`, userId, userId)
+
+	if error != nil {
+		return nil, error
+	}
+
+	defer query.Close()
+
+	var posts []models.Post
+
+	for query.Next() {
+		var post models.Post
+
+		if error = query.Scan(
+			&post.PostId,
+			&post.AuthorId,
+			&post.AuthorUsername,
+			&post.Title,
+			&post.Content,
+			&post.MusicTitle,
+			&post.MusicLink,
+		); error != nil {
+			return []models.Post{}, error
+		}
+
+		posts = append(posts, post)
+	}
+	return posts, nil
+}

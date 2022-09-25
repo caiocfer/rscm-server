@@ -15,6 +15,21 @@ import (
 	"github.com/gorilla/mux"
 )
 
+func getRepository(w http.ResponseWriter) *repository.Users {
+
+	db, error := db.Connect()
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return nil
+	}
+
+	defer db.Close()
+
+	repositories := repository.NewUserRepo(db)
+	return repositories
+
+}
+
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	bodyRequest, error := ioutil.ReadAll(r.Body)
 	if error != nil {
@@ -146,5 +161,94 @@ func GetUserById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responses.JSON(w, http.StatusOK, user)
+
+}
+
+func FollowUser(w http.ResponseWriter, r *http.Request) {
+	followerId, error := auth.GetUserID(r)
+	parameters := mux.Vars(r)
+
+	if error != nil {
+		responses.Error(w, http.StatusUnauthorized, error)
+	}
+
+	userId, error := strconv.ParseUint(parameters["userid"], 10, 64)
+	if error != nil {
+		responses.Error(w, http.StatusBadRequest, error)
+		return
+	}
+
+	db, error := db.Connect()
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	defer db.Close()
+	repository := repository.NewUserRepo(db)
+
+	if error = repository.FollowUser(userId, followerId); error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	responses.JSON(w, http.StatusNoContent, nil)
+}
+
+func UnfollowUser(w http.ResponseWriter, r *http.Request) {
+	followerId, error := auth.GetUserID(r)
+	parameters := mux.Vars(r)
+
+	if error != nil {
+		responses.Error(w, http.StatusUnauthorized, error)
+	}
+
+	userId, error := strconv.ParseUint(parameters["userid"], 10, 64)
+	if error != nil {
+		responses.Error(w, http.StatusBadRequest, error)
+		return
+	}
+
+	db, error := db.Connect()
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	defer db.Close()
+	repository := repository.NewUserRepo(db)
+
+	if error = repository.UnfollowUser(userId, followerId); error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	responses.JSON(w, http.StatusNoContent, nil)
+}
+
+func GetFollowedUserPosts(w http.ResponseWriter, r *http.Request) {
+	userId, error := auth.GetUserID(r)
+	if error != nil {
+		responses.Error(w, http.StatusUnauthorized, error)
+		return
+	}
+
+	db, error := db.Connect()
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	defer db.Close()
+
+	repositories := repository.NewUserRepo(db)
+	posts, error := repositories.GetFollowedUserPosts(userId)
+
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, posts)
 
 }
