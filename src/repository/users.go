@@ -216,8 +216,9 @@ func (repository Users) UnfollowUser(userId, followerId uint64) error {
 
 func (repository Users) GetFollowedUserPosts(userId uint64) ([]models.Post, error) {
 	query, error := repository.db.Query(`
-	select distinct p.*, u.username from posts p inner join users u on u.user_id = p.author_id 
-	inner join followers f on p.author_id = f.user_id where u.user_id = ? or f.follower_id = ? order by 1 desc;
+	select distinct posts.post_id, posts.author_id,users.username, posts.title, posts.content, posts.music_title, posts.music_link 
+	from posts inner join users on users.user_id = posts.author_id inner join followers f on posts.author_id = f.user_id 
+	where users.user_id = ? or f.follower_id = ? order by 1 desc
 	`, userId, userId)
 
 	if error != nil {

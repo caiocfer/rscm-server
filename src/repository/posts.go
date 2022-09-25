@@ -40,7 +40,7 @@ func (repository Posts) GetUserPosts(userId uint64) ([]models.Post, error) {
 	query, error := repository.db.Query(`
 		select posts.post_id, posts.author_id,users.username, posts.title, posts.content, posts.music_title, posts.music_link 
 		from posts inner join users on posts.author_id=users.user_id 
-		where posts.author_id = ?
+		where posts.author_id = ? order by post_id desc
 		`, userId,
 	)
 
