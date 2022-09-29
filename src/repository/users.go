@@ -248,3 +248,27 @@ func (repository Users) GetFollowedUserPosts(userId uint64) ([]models.Post, erro
 	}
 	return posts, nil
 }
+
+func (repository Users) GetFollowing(userId, followerId uint64) (bool, error) {
+	query, error := repository.db.Query(
+		"select * from followers where user_id = ? and follower_id = ?",
+		userId, followerId,
+	)
+
+	if error != nil {
+		return false, error
+	}
+	following := 0
+	for query.Next() {
+		following++
+	}
+
+	if following == 0 {
+		return false, nil
+	}
+
+	defer query.Close()
+
+	return true, nil
+
+}

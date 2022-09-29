@@ -18,4 +18,10 @@ var followRoute = []Route{
 		Function:               controller.UnfollowUser,
 		RequerisAuthentication: true,
 	},
+	{
+		URI:                    "/users/follow/{followerid}",
+		Method:                 http.MethodGet,
+		Function:               controller.GetFollowing,
+		RequerisAuthentication: true,
+	},
 }

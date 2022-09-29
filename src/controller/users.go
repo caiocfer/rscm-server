@@ -252,3 +252,42 @@ func GetFollowedUserPosts(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusOK, posts)
 
 }
+
+func GetFollowing(w http.ResponseWriter, r *http.Request) {
+	userId, error := auth.GetUserID(r)
+	parameters := mux.Vars(r)
+
+	var follow = false
+
+	if error != nil {
+		responses.Error(w, http.StatusUnauthorized, error)
+	}
+
+	followerId, error := strconv.ParseUint(parameters["followerid"], 10, 64)
+	if error != nil {
+		responses.Error(w, http.StatusBadRequest, error)
+		return
+	}
+
+	db, error := db.Connect()
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	defer db.Close()
+	repository := repository.NewUserRepo(db)
+
+	if follow, error = repository.GetFollowing(userId, followerId); error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	if follow {
+		responses.JSON(w, http.StatusOK, nil)
+	} else {
+		responses.JSON(w, http.StatusNoContent, nil)
+
+	}
+
+}
