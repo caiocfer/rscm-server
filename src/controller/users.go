@@ -165,14 +165,14 @@ func GetUserById(w http.ResponseWriter, r *http.Request) {
 }
 
 func FollowUser(w http.ResponseWriter, r *http.Request) {
-	followerId, error := auth.GetUserID(r)
+	userId, error := auth.GetUserID(r)
 	parameters := mux.Vars(r)
 
 	if error != nil {
 		responses.Error(w, http.StatusUnauthorized, error)
 	}
 
-	userId, error := strconv.ParseUint(parameters["userid"], 10, 64)
+	followerId, error := strconv.ParseUint(parameters["userid"], 10, 64)
 	if error != nil {
 		responses.Error(w, http.StatusBadRequest, error)
 		return
@@ -196,14 +196,14 @@ func FollowUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func UnfollowUser(w http.ResponseWriter, r *http.Request) {
-	followerId, error := auth.GetUserID(r)
+	userId, error := auth.GetUserID(r)
 	parameters := mux.Vars(r)
 
 	if error != nil {
 		responses.Error(w, http.StatusUnauthorized, error)
 	}
 
-	userId, error := strconv.ParseUint(parameters["userid"], 10, 64)
+	followerId, error := strconv.ParseUint(parameters["userid"], 10, 64)
 	if error != nil {
 		responses.Error(w, http.StatusBadRequest, error)
 		return

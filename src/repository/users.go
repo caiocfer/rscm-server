@@ -180,7 +180,7 @@ func (repository Users) GetUserById(userID uint64) (models.User, error) {
 
 func (repository Users) FollowUser(userId, followerId uint64) error {
 	statement, error := repository.db.Prepare(`
-	insert into followers (user_id, follower_id) values (?,?)
+	insert into followers (followed_id, follower_id) values (?,?)
 	`)
 
 	if error != nil {
@@ -198,7 +198,7 @@ func (repository Users) FollowUser(userId, followerId uint64) error {
 
 func (repository Users) UnfollowUser(userId, followerId uint64) error {
 	statement, error := repository.db.Prepare(`
-	delete from followers where user_id = ? and follower_id = ?
+	delete from followers where followed_id = ? and follower_id = ?
 	`)
 
 	if error != nil {
@@ -216,10 +216,13 @@ func (repository Users) UnfollowUser(userId, followerId uint64) error {
 
 func (repository Users) GetFollowedUserPosts(userId uint64) ([]models.Post, error) {
 	query, error := repository.db.Query(`
-	select distinct posts.post_id, posts.author_id,users.username, posts.title, posts.content, posts.music_title, posts.music_link 
-	from posts inner join users on users.user_id = posts.author_id inner join followers f on posts.author_id = f.user_id 
-	where users.user_id = ? or f.follower_id = ? order by 1 desc
-	`, userId, userId)
+	(select distinct posts.post_id, posts.author_id,users.username, posts.title, posts.content, posts.music_title, 
+	posts.music_link from posts inner join users on users.user_id = posts.author_id inner join followers f on posts.author_id = f.follower_id 
+	where users.user_id = ? or f.followed_id = ? order by 1 desc)
+	union distinct
+	(select distinct posts.post_id, posts.author_id,users.username, posts.title, posts.content, posts.music_title, posts.music_link 
+		from posts inner join users on users.user_id = posts.author_id where users.user_id = ? order by 1 desc) order by 1 desc
+	`, userId, userId, userId)
 
 	if error != nil {
 		return nil, error
@@ -251,9 +254,11 @@ func (repository Users) GetFollowedUserPosts(userId uint64) ([]models.Post, erro
 
 func (repository Users) GetFollowing(userId, followerId uint64) (bool, error) {
 	query, error := repository.db.Query(
-		"select * from followers where user_id = ? and follower_id = ?",
+		"select * from followers where followed_id = ? and follower_id = ?",
 		userId, followerId,
 	)
+
+	fmt.Println(userId, followerId)
 
 	if error != nil {
 		return false, error
