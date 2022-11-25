@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: rscm-api-webserver
 spec:
+  replicas: 2
   selector:
     matchLabels:
       app: rscm-api-webserver
@@ -17,33 +18,9 @@ spec:
       - name: rscm-api-webserver
         image: caiocfer/rscm:latest
         imagePullPolicy: Always
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
         ports:
         - containerPort: 5001
         readinessProbe:
           httpGet:
             path: /.status
             port: 5001
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: rscm-api-service
-spec:
-  selector:
-    app: rscm-api-webserver
-
-  type: NodePort
-  ports:
-    - name: http
-      port: 5001
-      targetPort: 80
-    - name: https
-      port: 443
-      targetPort: 5001
-    
